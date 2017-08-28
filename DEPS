@@ -5,6 +5,16 @@ deps = {
 }
 
 hooks = [
+  {
+    # Downloads the current stable linux sysroot to build/linux/ if needed.
+    # This sysroot updates at about the same rate that the chrome build deps
+    # change. This script is a no-op except for linux users who are doing
+    # official chrome builds or cross compiling.
+    'name': 'sysroot',
+    'pattern': '.',
+    'action': ['python', 'src/build/linux/sysroot_scripts/install-sysroot.py',
+               '--running-as-hook'],
+  },
   # Pull GN binaries.
   {
     'name': 'gn_win',
@@ -38,6 +48,21 @@ hooks = [
                 '--bucket', 'chromium-gn',
                 '-s', 'src/buildtools/linux64/gn.sha1',
     ],
+  },
+  {
+    'name': 'binutils',
+    'pattern': 'src/third_party/binutils',
+    'action': [
+        'python',
+        'src/third_party/binutils/download.py',
+    ],
+  },
+  {
+    # Pull clang if needed or requested via GYP_DEFINES.
+    # Note: On Win, this should run after win_toolchain, as it may use it.
+    'name': 'clang',
+    'pattern': '.',
+    'action': ['python', 'src/tools/clang/scripts/update.py', '--if-needed'],
   },
   # Pull clang-format binaries using checked-in hashes.
   {
